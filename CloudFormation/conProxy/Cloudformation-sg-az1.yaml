@@ -1,0 +1,133 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Stack para la creación de Security Groups"
+
+Resources:
+  SecurityGroupProxy:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para el Proxy Inverso"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        # Tráfico HTTP y HTTPS desde Internet hacia el Proxy Inverso
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  # HTTP
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0  # HTTPS
+        
+        # Acceso SSH al Proxy Inverso desde Internet
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # SSH
+        
+        # Tráfico XMPP desde clientes e interservidores hacia el Proxy Inverso
+        - IpProtocol: tcp
+          FromPort: 5222
+          ToPort: 5222
+          CidrIp: 0.0.0.0/0  # XMPP cliente
+        - IpProtocol: tcp
+          FromPort: 5269
+          ToPort: 5269
+          CidrIp: 0.0.0.0/0  # XMPP interservidores
+        
+        # Administración de Ejabberd a través del Proxy Inverso
+        - IpProtocol: tcp
+          FromPort: 5280
+          ToPort: 5280
+          CidrIp: 0.0.0.0/0  # Administración HTTP
+        - IpProtocol: tcp
+          FromPort: 5281
+          ToPort: 5281
+          CidrIp: 0.0.0.0/0  # Administración HTTPS
+        
+        # WebSockets para comunicación en tiempo real
+        - IpProtocol: tcp
+          FromPort: 5443
+          ToPort: 5443
+          CidrIp: 0.0.0.0/0  # WebSockets HTTPS para XMPP
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-proxy"
+
+  SecurityGroupEjabberd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para Ejabberd"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        # Redirección de tráfico desde el Proxy Inverso hacia Ejabberd
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref SecurityGroupProxy  # HTTP
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref SecurityGroupProxy  # SSH
+        - IpProtocol: tcp
+          FromPort: 5222
+          ToPort: 5222
+          SourceSecurityGroupId: !Ref SecurityGroupProxy  # XMPP cliente
+        - IpProtocol: tcp
+          FromPort: 5269
+          ToPort: 5269
+          SourceSecurityGroupId: !Ref SecurityGroupProxy  # XMPP interservidores
+        - IpProtocol: tcp
+          FromPort: 5280
+          ToPort: 5280
+          SourceSecurityGroupId: !Ref SecurityGroupProxy  # Administración HTTP
+        - IpProtocol: tcp
+          FromPort: 5281
+          ToPort: 5281
+          SourceSecurityGroupId: !Ref SecurityGroupProxy  # Administración HTTPS
+        - IpProtocol: tcp
+          FromPort: 5443
+          ToPort: 5443
+          SourceSecurityGroupId: !Ref SecurityGroupProxy  # WebSockets HTTPS para XMPP
+      SecurityGroupEgress:
+        # Permitir tráfico saliente desde Ejabberd hacia Internet (a través del NAT Gateway)
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-ejabberd"
+
+  SecurityGroupPostgreSQL:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para la Base de Datos PostgreSQL"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref SecurityGroupEjabberd  # Acceso desde Ejabberd
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-postgresql"
+
+Outputs:
+  SecurityGroupProxyId:
+    Description: "ID del Security Group del Proxy"
+    Value: !Ref SecurityGroupProxy
+    Export:
+      Name: "equipo3-SG-Proxy-ID"
+
+  SecurityGroupEjabberdId:
+    Description: "ID del Security Group de Ejabberd"
+    Value: !Ref SecurityGroupEjabberd
+    Export:
+      Name: "equipo3-SG-Ejabberd-ID"
+
+  SecurityGroupPostgreSQLId:
+    Description: "ID del Security Group de PostgreSQL"
+    Value: !Ref SecurityGroupPostgreSQL
+    Export:
+      Name: "equipo3-SG-PostgreSQL-ID"
