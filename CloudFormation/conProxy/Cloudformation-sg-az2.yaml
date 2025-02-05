@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Stack para la creación de Security Groups"
+
+Resources:
+  SecurityGroupProxyAZ2:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para el Proxy Inverso en AZ2"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  # HTTP
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0  # HTTPS
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # SSH
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-proxy-az2"
+
+  SecurityGroupCMS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para el Servidor CMS"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref SecurityGroupProxyAZ2  # HTTP desde el proxy inverso
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !Ref SecurityGroupProxyAZ2  # HTTPS desde el proxy inverso
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref SecurityGroupProxyAZ2  # SSH desde el proxy inverso
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-cms"
+
+  SecurityGroupRDS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para la Base de Datos RDS en AZ2"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref SecurityGroupCMS  # Acceso desde el Servidor CMS
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-rds"
+
+Outputs:
+  SecurityGroupProxyAZ2Id:
+    Description: "ID del Security Group del Proxy en AZ2"
+    Value: !Ref SecurityGroupProxyAZ2
+    Export:
+      Name: "equipo3-SG-Proxy-AZ2-ID"
+
+  SecurityGroupCMSId:
+    Description: "ID del Security Group del Servidor CMS"
+    Value: !Ref SecurityGroupCMS
+    Export:
+      Name: "equipo3-SG-CMS-ID"
+
+  SecurityGroupRDSId:
+    Description: "ID del Security Group de la Base de Datos RDS"
+    Value: !Ref SecurityGroupRDS
+    Export:
+      Name: "equipo3-SG-RDS-ID"
