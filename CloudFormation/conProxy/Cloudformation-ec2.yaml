@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Stack para la creación de instancias EC2"
+
+Parameters:
+  KeyName:
+    Type: String
+    Description: "Nombre del par de claves SSH"
+
+Resources:
+  EC2ProxyAZ1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPublic1-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-Proxy-AZ1-ID
+      PrivateIpAddress: 10.222.1.50
+      Tags:
+        - Key: Name
+          Value: "equipo3-proxy-az1"
+
+  EC2ProxyAZ2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPublic2-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-Proxy-AZ2-ID
+      PrivateIpAddress: 10.222.2.50
+      Tags:
+        - Key: Name
+          Value: "equipo3-proxy-az2"
+
+  EC2Ejabberd:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-Ejabberd-ID
+      PrivateIpAddress: 10.222.3.10
+      Tags:
+        - Key: Name
+          Value: "equipo3-ejabberd"
+
+  EC2PostgreSQL:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-PostgreSQL-ID
+      PrivateIpAddress: 10.222.3.100
+      Tags:
+        - Key: Name
+          Value: "equipo3-postgresql"
+
+  EC2CMS:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPrivate2-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-CMS-ID
+      PrivateIpAddress: 10.222.4.10
+      Tags:
+        - Key: Name
+          Value: "equipo3-cms"
+
+Outputs:
+  EC2ProxyAZ1Id:
+    Description: "ID de la instancia Proxy en AZ1"
+    Value: !Ref EC2ProxyAZ1
+    Export:
+      Name: "equipo3-EC2-Proxy-AZ1-ID"
+
+  EC2ProxyAZ2Id:
+    Description: "ID de la instancia Proxy en AZ2"
+    Value: !Ref EC2ProxyAZ2
+    Export:
+      Name: "equipo3-EC2-Proxy-AZ2-ID"
+
+  EC2EjabberdId:
+    Description: "ID de la instancia Ejabberd"
+    Value: !Ref EC2Ejabberd
+    Export:
+      Name: "equipo3-EC2-Ejabberd-ID"
+
+  EC2PostgreSQLId:
+    Description: "ID de la instancia PostgreSQL"
+    Value: !Ref EC2PostgreSQL
+    Export:
+      Name: "equipo3-EC2-PostgreSQL-ID"
+
+  EC2CMSId:
+    Description: "ID de la instancia CMS"
+    Value: !Ref EC2CMS
+    Export:
+      Name: "equipo3-EC2-CMS-ID"
