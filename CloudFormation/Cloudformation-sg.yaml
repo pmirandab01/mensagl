@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Stack para la creación de Security Groups"
+
+Resources:
+  SecurityGroupEjabberd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para Ejabberd"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5222
+          ToPort: 5222
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5269
+          ToPort: 5269
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5280
+          ToPort: 5280
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-ejabberd"
+
+  SecurityGroupPostgreSQL:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para PostgreSQL"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 10.0.0.0/16
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-postgresql"
+
+  SecurityGroupCMS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para CMS"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-cms"
+
+  SecurityGroupMySQL:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para MySQL"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 10.0.0.0/16
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-mysql"
+
+Outputs:
+  SecurityGroupEjabberdId:
+    Description: "ID del Security Group de Ejabberd"
+    Value: !Ref SecurityGroupEjabberd
+    Export:
+      Name: "equipo3-SG-Ejabberd-ID"
+
+  SecurityGroupPostgreSQLId:
+    Description: "ID del Security Group de PostgreSQL"
+    Value: !Ref SecurityGroupPostgreSQL
+    Export:
+      Name: "equipo3-SG-PostgreSQL-ID"
+
+  SecurityGroupCMSId:
+    Description: "ID del Security Group de CMS"
+    Value: !Ref SecurityGroupCMS
+    Export:
+      Name: "equipo3-SG-CMS-ID"
+
+  SecurityGroupMySQLId:
+    Description: "ID del Security Group de MySQL"
+    Value: !Ref SecurityGroupMySQL
+    Export:
+      Name: "equipo3-SG-MySQL-ID"
