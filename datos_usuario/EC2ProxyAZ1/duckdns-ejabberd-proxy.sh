@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuración
-DOMAIN="ejabberdpmm"
+DOMAIN="equipo3pmbm"
 TOKEN="6b4a8e59-621e-4151-8e3a-5a862cabedaa"
 DUCKDNS_DIR="/opt/duckdns"
 
