@@ -16,7 +16,7 @@ Resources:
       SubnetId: !ImportValue equipo3-SubnetPublic1-ID
       SecurityGroupIds:
         - !ImportValue equipo3-SG-Proxy-AZ1-ID
-      PrivateIpAddress: 10.222.1.50
+      PrivateIpAddress: 10.222.1.10
       Tags:
         - Key: Name
           Value: "equipo3-az1-proxy"
@@ -38,7 +38,7 @@ Resources:
       SubnetId: !ImportValue equipo3-SubnetPublic2-ID
       SecurityGroupIds:
         - !ImportValue equipo3-SG-Proxy-AZ2-ID
-      PrivateIpAddress: 10.222.2.50
+      PrivateIpAddress: 10.222.3.10
       Tags:
         - Key: Name
           Value: "equipo3-az2-proxy"
@@ -60,7 +60,7 @@ Resources:
       SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
       SecurityGroupIds:
         - !ImportValue equipo3-SG-Ejabberd-ID
-      PrivateIpAddress: 10.222.3.10
+      PrivateIpAddress: 10.222.2.10
       Tags:
         - Key: Name
           Value: "equipo3-ejabberd-1"
@@ -82,7 +82,7 @@ Resources:
       SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
       SecurityGroupIds:
         - !ImportValue equipo3-SG-Ejabberd-ID
-      PrivateIpAddress: 10.222.3.11
+      PrivateIpAddress: 10.222.2.100
       Tags:
         - Key: Name
           Value: "equipo3-ejabberd-2"
@@ -104,7 +104,7 @@ Resources:
       SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
       SecurityGroupIds:
         - !ImportValue equipo3-SG-PostgreSQL-ID
-      PrivateIpAddress: 10.222.3.100
+      PrivateIpAddress: 10.222.2.11
       Tags:
         - Key: Name
           Value: "equipo3-az1-postgresql-1"
@@ -126,7 +126,7 @@ Resources:
       SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
       SecurityGroupIds:
         - !ImportValue equipo3-SG-PostgreSQL-ID
-      PrivateIpAddress: 10.222.3.101
+      PrivateIpAddress: 10.222.2.12
       Tags:
         - Key: Name
           Value: "equipo3-az1-postgresql-2"
@@ -234,3 +234,4 @@ Outputs:
     Value: !Ref EC2CMS2
     Export:
       Name: "equipo3-EC2-CMS-2-ID"
+
