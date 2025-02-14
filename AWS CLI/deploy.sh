@@ -2,10 +2,10 @@
 
 set -e  # Detener la ejecución en caso de error
 
-STACK_VPC="vpc-mensagl-2025-PABLOMIRANDA"
+STACK_VPC="vpc-mensagl-2025-pablomb"
 STACK_SG="equipo3-sg"
 STACK_INSTANCES="equipo3-instances"
-KEY_NAME="ssh-mensagl-2025-PABLOMIRANDA"
+KEY_NAME="ssh-mensagl-2025-pablomb"
 KEY_FILE="${KEY_NAME}.pem"
 
 # Directorios de los archivos YAML
