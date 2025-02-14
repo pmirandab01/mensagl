@@ -1,7 +1,7 @@
 #!/bin/bash
 # RDS 
 
-STACK_VPC="vpc-mensagl-2025-PABLOMIRANDA"
+STACK_VPC="vpc-mensagl-2025-pablomb"
 STACK_SG="equipo3-sg"
 
 SG_DB_CMS_ID=$(aws cloudformation describe-stacks --stack-name "$STACK_SG" --query "Stacks[0].Outputs[?ExportName=='equipo3-SG-RDS-ID'].OutputValue" --output text)
@@ -54,6 +54,3 @@ aws rds create-db-instance \
     --vpc-security-group-ids "$SG_DB_CMS_ID" \
     --tags Key=Name,Value="wordpress_db"
 echo "Instancia RDS MySQL creada exitosamente."
-
-
-
