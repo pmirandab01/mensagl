@@ -1,89 +1,236 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Stack para la creación de instancias EC2"
+Description: "Stack para la creación de instancias EC2 y RDS"
 
 Parameters:
   KeyName:
     Type: String
-    Description: "Nombre del par de claves SSH"
+    Description: "mensagl"
 
 Resources:
-  EC2Ejabberd:
+  EC2ProxyAZ1:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
       ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
-      KeyName: !Ref KeyName  # Ahora usa el parámetro dinámico
+      KeyName: !Ref KeyName
       SubnetId: !ImportValue equipo3-SubnetPublic1-ID
       SecurityGroupIds:
-        - !ImportValue equipo3-SG-Ejabberd-ID
-      PrivateIpAddress: 10.222.1.10
+        - !ImportValue equipo3-SG-Proxy-AZ1-ID
+      PrivateIpAddress: 10.222.1.50
       Tags:
         - Key: Name
-          Value: "equipo3-ejabberd"
+          Value: "equipo3-az1-proxy"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install unzip -y
+          git clone https://github.com/pmirandab01/mensagl.git
+          cp -r mensagl/datos_usuario/EC2ProxyAZ1/ /tmp/
+          sudo rm -r -f mensagl/
 
-  EC2PostgreSQL:
+  EC2ProxyAZ2:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
       ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
-      KeyName: !Ref KeyName  # Ahora usa el parámetro dinámico
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPublic2-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-Proxy-AZ2-ID
+      PrivateIpAddress: 10.222.2.50
+      Tags:
+        - Key: Name
+          Value: "equipo3-az2-proxy"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install unzip -y
+          git clone https://github.com/pmirandab01/mensagl.git
+          cp -r mensagl/datos_usuario/EC2ProxyAZ2/ /tmp/
+          sudo rm -r -f mensagl/
+
+  EC2Ejabberd1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # ubuntu Server 24.04
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-Ejabberd-ID
+      PrivateIpAddress: 10.222.3.10
+      Tags:
+        - Key: Name
+          Value: "equipo3-ejabberd-1"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install unzip -y
+          git clone https://github.com/pmirandab01/mensagl.git
+          cp -r mensagl/datos_usuario/EC2Ejabberd1/ /tmp/
+          sudo rm -r -f mensagl/
+
+  EC2Ejabberd2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-Ejabberd-ID
+      PrivateIpAddress: 10.222.3.11
+      Tags:
+        - Key: Name
+          Value: "equipo3-ejabberd-2"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install unzip -y
+          git clone https://github.com/pmirandab01/mensagl.git
+          cp -r mensagl/datos_usuario/EC2Ejabberd2/ /tmp/
+          sudo rm -r -f mensagl/
+
+  EC2PostgreSQL1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
+      KeyName: !Ref KeyName
       SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
       SecurityGroupIds:
         - !ImportValue equipo3-SG-PostgreSQL-ID
       PrivateIpAddress: 10.222.3.100
       Tags:
         - Key: Name
-          Value: "equipo3-postgresql"
+          Value: "equipo3-az1-postgresql-1"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install unzip -y
+          git clone https://github.com/pmirandab01/mensagl.git
+          cp -r mensagl/datos_usuario/EC2PostgreSQL1/ /tmp/
+          sudo rm -r -f mensagl/
 
-  EC2CMS:
+  EC2PostgreSQL2:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
       ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
-      KeyName: !Ref KeyName  # Ahora usa el parámetro dinámico
-      SubnetId: !ImportValue equipo3-SubnetPublic2-ID
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPrivate1-ID
       SecurityGroupIds:
-        - !ImportValue equipo3-SG-CMS-ID
-      PrivateIpAddress: 10.222.2.10
+        - !ImportValue equipo3-SG-PostgreSQL-ID
+      PrivateIpAddress: 10.222.3.101
       Tags:
         - Key: Name
-          Value: "equipo3-cms"
+          Value: "equipo3-az1-postgresql-2"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install unzip -y
+          git clone https://github.com/pmirandab01/mensagl.git
+          cp -r mensagl/datos_usuario/EC2PostgreSQL2/ /tmp/
+          sudo rm -r -f mensagl/          
 
-  EC2MySQL:
+  EC2CMS1:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
       ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
-      KeyName: !Ref KeyName  # Ahora usa el parámetro dinámico
+      KeyName: !Ref KeyName
       SubnetId: !ImportValue equipo3-SubnetPrivate2-ID
       SecurityGroupIds:
-        - !ImportValue equipo3-SG-MySQL-ID
-      PrivateIpAddress: 10.222.4.100
+        - !ImportValue equipo3-SG-CMS-ID
+        - !ImportValue equipo3-SG-RDS-ID  # Asegura que CMS pueda hablar con RDS
+      PrivateIpAddress: 10.222.4.10
       Tags:
         - Key: Name
-          Value: "equipo3-mysql"
+          Value: "equipo3-az2-cms1"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install unzip -y
+          git clone https://github.com/pmirandab01/mensagl.git
+          cp -r mensagl/datos_usuario/EC2CMS1/ /tmp/
+          sudo rm -r -f mensagl/
+
+  EC2CMS2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-04b4f1a9cf54c11d0 # Ubuntu Server 24.04
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue equipo3-SubnetPrivate2-ID
+      SecurityGroupIds:
+        - !ImportValue equipo3-SG-CMS-ID
+        - !ImportValue equipo3-SG-RDS-ID  # Asegura que CMS pueda hablar con RDS
+      PrivateIpAddress: 10.222.4.11
+      Tags:
+        - Key: Name
+          Value: "equipo3-az2-cms2"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install unzip -y
+          git clone https://github.com/pmirandab01/mensagl.git
+          cp -r mensagl/datos_usuario/EC2CMS2/ /tmp/
+          sudo rm -r -f mensagl/
+
 
 Outputs:
-  EC2EjabberdId:
-    Description: "ID de la instancia Ejabberd"
-    Value: !Ref EC2Ejabberd
+  EC2ProxyAZ1Id:
+    Description: "ID de la instancia Proxy en AZ1"
+    Value: !Ref EC2ProxyAZ1
     Export:
-      Name: "equipo3-EC2-Ejabberd-ID"
+      Name: "equipo3-EC2-Proxy-AZ1-ID"
 
-  EC2PostgreSQLId:
-    Description: "ID de la instancia PostgreSQL"
-    Value: !Ref EC2PostgreSQL
+  EC2ProxyAZ2Id:
+    Description: "ID de la instancia Proxy en AZ2"
+    Value: !Ref EC2ProxyAZ2
     Export:
-      Name: "equipo3-EC2-PostgreSQL-ID"
+      Name: "equipo3-EC2-Proxy-AZ2-ID"
 
-  EC2CMSId:
-    Description: "ID de la instancia CMS"
-    Value: !Ref EC2CMS
+  EC2Ejabberd1Id:
+    Description: "ID de la primera instancia Ejabberd"
+    Value: !Ref EC2Ejabberd1
     Export:
-      Name: "equipo3-EC2-CMS-ID"
+      Name: "equipo3-EC2-Ejabberd-1-ID"
 
-  EC2MySQLId:
-    Description: "ID de la instancia MySQL"
-    Value: !Ref EC2MySQL
+  EC2Ejabberd2Id:
+    Description: "ID de la segunda instancia Ejabberd"
+    Value: !Ref EC2Ejabberd2
     Export:
-      Name: "equipo3-EC2-MySQL-ID"
+      Name: "equipo3-EC2-Ejabberd-2-ID"
+
+  EC2PostgreSQL1Id:
+    Description: "ID de la primera instancia PostgreSQL"
+    Value: !Ref EC2PostgreSQL1
+    Export:
+      Name: "equipo3-EC2-PostgreSQL-1-ID"
+
+  EC2PostgreSQL2Id:
+    Description: "ID de la segunda instancia PostgreSQL"
+    Value: !Ref EC2PostgreSQL2
+    Export:
+      Name: "equipo3-EC2-PostgreSQL-2-ID"
+
+  EC2CMS1Id:
+    Description: "ID de la primera instancia CMS"
+    Value: !Ref EC2CMS1
+    Export:
+      Name: "equipo3-EC2-CMS-1-ID"
+
+  EC2CMS2Id:
+    Description: "ID de la segunda instancia CMS"
+    Value: !Ref EC2CMS2
+    Export:
+      Name: "equipo3-EC2-CMS-2-ID"
