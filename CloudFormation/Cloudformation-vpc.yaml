@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Stack para la creación de la VPC y sus componentes."
+Description: "VPC con HA proxy y soporte para subredes públicas y privadas en dos zonas de disponibilidad"
 
 Resources:
   VPC:
@@ -24,6 +24,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
+    DependsOn: InternetGateway
 
   SubnetPublic1:
     Type: AWS::EC2::Subnet
@@ -36,16 +37,6 @@ Resources:
         - Key: Name
           Value: "equipo3-public-1"
 
-  SubnetPrivate1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.222.3.0/24
-      AvailabilityZone: !Select [0, !GetAZs ""]
-      Tags:
-        - Key: Name
-          Value: "equipo3-private-1"
-
   SubnetPublic2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -56,6 +47,16 @@ Resources:
       Tags:
         - Key: Name
           Value: "equipo3-public-2"
+
+  SubnetPrivate1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.222.3.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      Tags:
+        - Key: Name
+          Value: "equipo3-private-1"
 
   SubnetPrivate2:
     Type: AWS::EC2::Subnet
@@ -89,6 +90,18 @@ Resources:
         - Key: Name
           Value: "equipo3-public-rt"
 
+  RouteTablePublicAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      SubnetId: !Ref SubnetPublic1
+
+  RouteTablePublicAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      SubnetId: !Ref SubnetPublic2
+
   RoutePublic:
     Type: AWS::EC2::Route
     Properties:
@@ -104,36 +117,25 @@ Resources:
         - Key: Name
           Value: "equipo3-private-rt"
 
+  RouteTablePrivateAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate
+      SubnetId: !Ref SubnetPrivate1
+
+  RouteTablePrivateAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate
+      SubnetId: !Ref SubnetPrivate2
+
   RoutePrivate:
     Type: AWS::EC2::Route
+    DependsOn: NATGateway
     Properties:
       RouteTableId: !Ref RouteTablePrivate
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NATGateway
-
-  SubnetRouteTableAssociationPublic1:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref SubnetPublic1
-      RouteTableId: !Ref RouteTablePublic
-
-  SubnetRouteTableAssociationPublic2:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref SubnetPublic2
-      RouteTableId: !Ref RouteTablePublic
-
-  SubnetRouteTableAssociationPrivate1:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref SubnetPrivate1
-      RouteTableId: !Ref RouteTablePrivate
-
-  SubnetRouteTableAssociationPrivate2:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref SubnetPrivate2
-      RouteTableId: !Ref RouteTablePrivate
 
 Outputs:
   VPCId:
@@ -165,3 +167,9 @@ Outputs:
     Value: !Ref SubnetPrivate2
     Export:
       Name: "equipo3-SubnetPrivate2-ID"
+
+  NatGatewayId:
+    Description: "ID del NAT Gateway"
+    Value: !Ref NATGateway
+    Export:
+      Name: "equipo3-NATGateway-ID"
