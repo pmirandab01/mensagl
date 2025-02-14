@@ -4,7 +4,7 @@
 # Script combinado para la creación de VPC, subredes, gateways y Security Groups con NAT Gateway
 
 # VARIABLES
-VPC_NAME="reto25-equipo3-pablomm-vpc"
+VPC_NAME="vpc-mensagl-2025-pablomb"
 CIDR_BLOCK="10.222.0.0/16"
 REGION="us-east-1"
 
@@ -163,7 +163,7 @@ echo "Permitido tráfico SSH desde cualquier IP"
 # AMI de Ubuntu Server 24.04 LTS (ID puede variar por región, ajusta según sea necesario)
 AMI_ID="ami-04b4f1a9cf54c11d0" # Reemplaza con la AMI correcta de Ubuntu 24.04
 INSTANCE_TYPE="t2.micro"
-KEY_NAME="reto25-equipo3-pablomm"
+KEY_NAME="ssh-mensagl-2025-pablomb"
 KEY_FILE="$KEY_NAME.pem"
 
 # Verificar si la clave SSH ya existe
