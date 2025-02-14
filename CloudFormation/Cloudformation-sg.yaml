@@ -1,112 +1,198 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Stack para la creación de Security Groups"
+Description: "Stack de Security Groups para toda la infraestructura en ambas AZs"
 
 Resources:
-  SecurityGroupEjabberd:
+  # Security Group para HAProxy en AZ1
+  SecurityGroupProxyAZ1:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: "Security Group para Ejabberd"
+      GroupDescription: "Security Group para HAProxy en AZ1"
       VpcId: !ImportValue equipo3-VPC-ID
       SecurityGroupIngress:
         - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # FTP
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  # HTTP
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0  # HTTPS
+        - IpProtocol: tcp
           FromPort: 5222
           ToPort: 5222
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 5269
-          ToPort: 5269
-          CidrIp: 0.0.0.0/0
+          CidrIp: 0.0.0.0/0  # XMPP Client
         - IpProtocol: tcp
           FromPort: 5280
           ToPort: 5280
+          CidrIp: 0.0.0.0/0  # XMPP BOSH
+        - IpProtocol: tcp
+          FromPort: 5281
+          ToPort: 5281
+          CidrIp: 0.0.0.0/0  # XMPP HTTPS BOSH
+        - IpProtocol: tcp
+          FromPort: 5269
+          ToPort: 5269
+          CidrIp: 0.0.0.0/0  # XMPP Server
+      SecurityGroupEgress:
+        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-proxy-az1"
+
+  # Security Group para Ejabberd en AZ1
+  SecurityGroupEjabberd:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para servidores Ejabberd"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
+          SourceSecurityGroupId: !Ref SecurityGroupProxyAZ1  # SSH desde el Proxy
+        - IpProtocol: tcp
+          FromPort: 5222
+          ToPort: 5222
+          SourceSecurityGroupId: !Ref SecurityGroupProxyAZ1  # XMPP Client desde el Proxy
+        - IpProtocol: tcp
+          FromPort: 5280
+          ToPort: 5280
+          CidrIp: 0.0.0.0/0  # XMPP BOSH
+        - IpProtocol: tcp
+          FromPort: 5281
+          ToPort: 5281
+          CidrIp: 0.0.0.0/0  # XMPP HTTPS BOSH
+        - IpProtocol: tcp
+          FromPort: 5269
+          ToPort: 5269
+          CidrIp: 0.0.0.0/0  # XMPP Server
+      SecurityGroupEgress:
+        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
           Value: "equipo3-sg-ejabberd"
 
+  # Security Group para PostgreSQL en AZ1
   SecurityGroupPostgreSQL:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: "Security Group para PostgreSQL"
+      GroupDescription: "Security Group para servidores PostgreSQL"
       VpcId: !ImportValue equipo3-VPC-ID
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 5432
           ToPort: 5432
-          CidrIp: 10.222.0.0/16
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
+          CidrIp: 10.0.1.0/24  # Permitir tráfico de la subred privada donde está Ejabberd
+      SecurityGroupEgress:
+        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
           Value: "equipo3-sg-postgresql"
 
-  SecurityGroupCMS:
+  # Security Group para HAProxy en AZ2
+  SecurityGroupProxyAZ2:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: "Security Group para CMS"
+      GroupDescription: "Security Group para Proxy Inverso en AZ2"
       VpcId: !ImportValue equipo3-VPC-ID
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
+          CidrIp: 0.0.0.0/0  # HTTP
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          CidrIp: 0.0.0.0/0
+          CidrIp: 0.0.0.0/0  # HTTPS
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
+          CidrIp: 0.0.0.0/0  # SSH
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: "equipo3-sg-proxy-az2"
+
+  # Security Group para CMS en AZ2
+  SecurityGroupCMS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group para Servidor CMS en AZ2"
+      VpcId: !ImportValue equipo3-VPC-ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref SecurityGroupProxyAZ2  # HTTP solo desde Proxy
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !Ref SecurityGroupProxyAZ2  # HTTPS solo desde Proxy
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref SecurityGroupProxyAZ2  # SSH solo desde Proxy
+      SecurityGroupEgress:
+        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
           Value: "equipo3-sg-cms"
 
-  SecurityGroupMySQL:
+  # Security Group para RDS en AZ2
+  SecurityGroupRDS:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: "Security Group para MySQL"
+      GroupDescription: "Security Group para Base de Datos MySQL RDS en AZ2"
       VpcId: !ImportValue equipo3-VPC-ID
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
           ToPort: 3306
-          CidrIp: 10.0.0.0/16
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
+          SourceSecurityGroupId: !Ref SecurityGroupCMS  # MySQL solo accesible desde CMS
+      SecurityGroupEgress:
+        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: "equipo3-sg-mysql"
+          Value: "equipo3-sg-rds"
 
 Outputs:
-  SecurityGroupEjabberdId:
-    Description: "ID del Security Group de Ejabberd"
+  SecurityGroupProxyAZ1ID:
+    Value: !Ref SecurityGroupProxyAZ1
+    Export:
+      Name: "equipo3-SG-Proxy-AZ1-ID"
+
+  SecurityGroupEjabberdID:
     Value: !Ref SecurityGroupEjabberd
     Export:
       Name: "equipo3-SG-Ejabberd-ID"
 
-  SecurityGroupPostgreSQLId:
-    Description: "ID del Security Group de PostgreSQL"
+  SecurityGroupPostgreSQLID:
     Value: !Ref SecurityGroupPostgreSQL
     Export:
       Name: "equipo3-SG-PostgreSQL-ID"
 
-  SecurityGroupCMSId:
-    Description: "ID del Security Group de CMS"
+  SecurityGroupProxyAZ2ID:
+    Value: !Ref SecurityGroupProxyAZ2
+    Export:
+      Name: "equipo3-SG-Proxy-AZ2-ID"
+
+  SecurityGroupCMSID:
     Value: !Ref SecurityGroupCMS
     Export:
       Name: "equipo3-SG-CMS-ID"
 
-  SecurityGroupMySQLId:
-    Description: "ID del Security Group de MySQL"
-    Value: !Ref SecurityGroupMySQL
+  SecurityGroupRDSID:
+    Value: !Ref SecurityGroupRDS
     Export:
-      Name: "equipo3-SG-MySQL-ID"
+      Name: "equipo3-SG-RDS-ID"
